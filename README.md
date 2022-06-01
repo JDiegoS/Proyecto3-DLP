@@ -1,4 +1,4 @@
 # Proyecto2-DLP
-Generador de analizadores lexicos
+Generador de analizadores sintacticos
 
 Correr main.py
