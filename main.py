@@ -1,5 +1,5 @@
 # Juan Diego Solorzano 18151
-# Proyecto 2 generador de analizadores lexicos
+# Proyecto 3 generador de analizadores sintacticos
 
 from PySimpleAutomata import automata_IO
 import os
@@ -26,6 +26,12 @@ while success == False:
     tokens = lector.getTokens()
     keywords = lector.getKeywords()
     characters = lector.getCharacters()
+    productions = lector.getProductions()
+    anons = lector.getTokensAnon()
+    for i in productions:
+        print(i.id)
+        print(i.params)
+        print(i.value)
     
-    generador = Generador(tokens, keywords, characters)
+    generador = Generador(tokens, keywords, characters, anons, productions)
     generador.analizeGrammar()

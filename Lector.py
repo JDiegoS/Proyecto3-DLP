@@ -1,6 +1,7 @@
 from Characters import Characters
 from Keywords import Keywords
 from Token import Token
+from Production import Production
 
 class Lector(object):
     def __init__(self, filename):
@@ -14,6 +15,7 @@ class Lector(object):
         self.characters = []
         self.keywords = []
         self.tokens = []
+        self.tokensAnon = []
         self.productions = []
         self.currentType = ''
         self.reservedCount = 0
@@ -57,16 +59,19 @@ class Lector(object):
             self.reservedCount +=1
             self.leftReserved = self.leftReserved.replace('PRODUCTIONS ', '')
             self.currentType = 'PRODUCTIONS'
-            return
+            
         else:
             # Verificar que termine con .
-            if letters[-1] != '.' and letters[-1] != '=' and letters[-1] != '+':
-                print('\nError al final de linea. Debe terminar en =, + o .\n')
-                quit()
+            if self.currentType != 'PRODUCTIONS':
+                if letters[-1] != '.' and letters[-1] != '=' and letters[-1] != '+':
+                    print(letters)
+                    print('\nError al final de linea. Debe terminar en =, + o .\n')
+                    quit()
             # Separar linea
             if self.finishedLine == False:
                 letters = 'a=' + letters
-            words = letters.split('=')
+            
+            words = letters.split('=', 1)
             
             # Analizar characters
             if self.currentType == 'CHARACTERS':
@@ -146,18 +151,59 @@ class Lector(object):
                 else:
                     self.tokens[-1].value += value
                     self.finishedLine = True
+
+            #Analizar producciones
+            elif self.currentType == 'PRODUCTIONS':
+                leftSide = words[0]
+                params = []
+                if leftSide.find('<') != -1:
+                    paramStart = leftSide.split('<')
+                    paramEnd = paramStart[1].find('>')
+                    if paramEnd != -1:
+                        params = paramStart[1][0:paramEnd]
+                        id = paramStart[0]
+                
+                else:
+                    id = leftSide
+                
+                anonStart = words[1].find('"')
+                if anonStart != -1:
+                    anonEnd = words[1][anonStart+1:].find('"')
+                    if anonEnd != -1:
+                        newToken = words[1][anonStart+1:anonStart+1+anonEnd]
+                        exists = False
+                        for i in self.tokensAnon:
+                            if newToken == i.id:
+                                exists = True
+                        if exists == False:
+                            self.tokensAnon.append(Token(newToken, newToken))
+                if letters[-1] == '.':
+                    value = words[1][:-1].replace('\t', '')
+                else:
+                    value = words[1].replace('\t', '')
+                if self.finishedLine:
+                    self.productions.append(Production(id, params, value))
+                else:
+                    self.productions[-1].value += value
+                    self.finishedLine = True
             
-            if letters[-1] == '=' or letters[-1] == '+':
+            if letters[-1] != '.':
                 self.finishedLine = False
     
     def getTokens(self):
         return self.tokens
+
+    def getTokensAnon(self):
+        return self.tokensAnon
         
     def getCharacters(self):
         return self.characters
 
     def getKeywords(self):
         return self.keywords
+
+    def getProductions(self):
+        return self.productions
                 
                         
 

@@ -159,9 +159,15 @@ class AFN(object):
             self.state += 1
     
     def positiveOp(self, first):
+        ''' positiva
         for i in self.nodes:
             if i.state == str(first) or i.state == first:    
                 i.transitions.append([str(self.lastState), 'epsilon'])
+        '''
+        # ?
+        for i in self.nodes:
+            if i.state == str(self.lastState) or i.state == self.lastState:
+                i.transitions.append([str(first), 'epsilon'])
         
     def parenthesisOp(self, state, position, accepted, inOr=False):
         operacionP = []

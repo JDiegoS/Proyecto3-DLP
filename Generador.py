@@ -1,5 +1,5 @@
 # Juan Diego Solorzano 18151
-# Proyecto 1 Automatas
+# Proyecto 3 generador de analizadores sintacticos
 
 from PySimpleAutomata import automata_IO
 import os
@@ -7,12 +7,13 @@ import json
 from Node import Node
 from AFN import AFN
 from Subconjuntos import Subconjuntos
+from GeneradorSintactico import GeneradorSintactico
 
 from Node import Node
 class Generador(object):
     # Clase para construir AFN
 
-    def __init__(self, tokens, keywords, characters):
+    def __init__(self, tokens, keywords, characters, anons, productions):
         self.tokens = tokens
         self.keywords = keywords
         self.characters = characters
@@ -20,6 +21,8 @@ class Generador(object):
         self.expressions = []
         self.tokensAccepted = []
         self.tokenStates = []
+        self.anons = anons
+        self.productions = productions
 
         os.environ["PATH"] += os.pathsep + 'C:/Program Files/graphviz/bin'
 
@@ -28,8 +31,11 @@ class Generador(object):
 
         # Verificar que se cierren los parentesis y kleene
         for i in self.expressions:
+            if len(i) <= 1:
+                continue
             arr = list(i)
             if arr.count('(') != arr.count(')') or arr.count('{') != arr.count('}') or arr.count('[') != arr.count(']'):
+                print(i)
                 print('\nError. No se cerro un (, { o [\n')
                 quit()
 
@@ -61,6 +67,10 @@ class Generador(object):
         #self.simulateA(afd)
         #self.simulateFile(afd)
         self.generateFile(afd)
+
+        sint = GeneradorSintactico(self.tokens, self.keywords, self.productions, self.anons, [])
+        
+
 
 
     def analizeGrammar(self):
@@ -162,17 +172,21 @@ class Generador(object):
         return graph2
 
     def generateFile(self, graph):
-        f = open("generado.py", "w")
+        f = open("scanner.py", "w")
         f.write("graph = " + str(graph))
         keys = []
         for i in self.keywords:
             keys.append([i.id, i.value])
         f.write("\nkeywords = " + str(keys))
+        anonymous = []
+        for i in self.anons:
+            anonymous.append([i.id, i.value])
+        f.write("\nanons = " + str(anonymous))
         f.write("\ntokenStates = " + str(self.tokenStates))
         f.write('''
 
 enter = chr(92) + chr(110)
-def simulateFile(graph, keywords, tokenStates):
+def simulateFile(graph, keywords, anons, tokenStates):
     #Simular archivo txt
     success = False
     while success == False:
@@ -206,12 +220,15 @@ def simulateFile(graph, keywords, tokenStates):
             empty = False
             maybeKeyword = False
             while (i != len(cadena)-1):
+                
                 currentChain += cadena[i]
-                currentToken = simulateWord(graph, currentChain, keywords, tokenStates)
+                currentToken = simulateWord(graph, currentChain, keywords, anons, tokenStates)
                 passedAccepted.append([currentToken[0], currentChain])
                 if(currentToken[0] != "NO ES ACEPTADO POR LA GRAMATICA"):
                     lastAccepted = i
                     lastToken = currentToken[0]
+                    if currentToken[1] == 'anon':
+                        maybeKeyword = True
                 elif currentToken[1] == 's0':
                     
                     for k in keywords:
@@ -221,6 +238,7 @@ def simulateFile(graph, keywords, tokenStates):
                     if maybeKeyword == False:
                         empty = True
                         break
+
                 i+=1
                 if i == len(cadena)-1 and lastToken == '':
                     #No se acepta en el analizador
@@ -244,12 +262,17 @@ def simulateFile(graph, keywords, tokenStates):
     print()
 
 
-def simulateWord(graph, opc, keywords, tokenStates):
+def simulateWord(graph, opc, keywords, anons, tokenStates):
     # Simular una palabra
     found = False
     for i in keywords:
         if opc == i[1]:
             return [i[0], 's1']
+    
+    for i in anons:
+        if opc == i[1]:
+            return [i[0], 'anon']
+
 
     if found != True:
         cadena = list(opc)
@@ -285,7 +308,7 @@ def simulateWord(graph, opc, keywords, tokenStates):
             else:
                 return ["NO ES ACEPTADO POR LA GRAMATICA", s]
 
-simulateFile(graph, keywords, tokenStates)
+simulateFile(graph, keywords, anons, tokenStates)
             ''')
     
     def simulateA(self, graph):
