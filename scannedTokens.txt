@@ -1,0 +1,1 @@
+numeroToken + numeroToken * * numeroToken ; numeroToken + numeroToken ; numeroToken ; 

@@ -203,6 +203,7 @@ def simulateFile(graph, keywords, anons, tokenStates):
         success = True
     fileLines = archivoTexto.readlines()
     tokens = []
+    values = []
     for i in fileLines:
         i = i.replace(enter, '')
         cadena = list(i)
@@ -219,6 +220,7 @@ def simulateFile(graph, keywords, anons, tokenStates):
             lastToken = ''
             empty = False
             maybeKeyword = False
+            lastValue = ''
             while (i != len(cadena)-1):
                 
                 currentChain += cadena[i]
@@ -227,6 +229,7 @@ def simulateFile(graph, keywords, anons, tokenStates):
                 if(currentToken[0] != "NO ES ACEPTADO POR LA GRAMATICA"):
                     lastAccepted = i
                     lastToken = currentToken[0]
+                    lastValue = currentChain
                     if currentToken[1] == 'anon':
                         maybeKeyword = True
                 elif currentToken[1] == 's0':
@@ -247,6 +250,7 @@ def simulateFile(graph, keywords, anons, tokenStates):
             if empty == False:
                 index = lastAccepted + 1
                 tokens.append(lastToken)
+                values.append(lastValue)
                 
             else:
                 index += 1
@@ -260,6 +264,10 @@ def simulateFile(graph, keywords, anons, tokenStates):
         res += i + ' '
     print(res)
     print()
+    vals = ''
+    for i in values:
+        vals += i + ' '
+    return res, vals
 
 
 def simulateWord(graph, opc, keywords, anons, tokenStates):
@@ -308,7 +316,13 @@ def simulateWord(graph, opc, keywords, anons, tokenStates):
             else:
                 return ["NO ES ACEPTADO POR LA GRAMATICA", s]
 
-simulateFile(graph, keywords, anons, tokenStates)
+result, values = simulateFile(graph, keywords, anons, tokenStates)
+f = open("scannedTokens.txt", "w")
+f.write(result)
+f.close()
+f = open("scannedValues.txt", "w")
+f.write(values)
+f.close()
             ''')
     
     def simulateA(self, graph):

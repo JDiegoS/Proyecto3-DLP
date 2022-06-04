@@ -165,18 +165,26 @@ class Lector(object):
                 
                 else:
                     id = leftSide
-                
-                anonStart = words[1].find('"')
-                if anonStart != -1:
-                    anonEnd = words[1][anonStart+1:].find('"')
-                    if anonEnd != -1:
-                        newToken = words[1][anonStart+1:anonStart+1+anonEnd]
-                        exists = False
-                        for i in self.tokensAnon:
-                            if newToken == i.id:
-                                exists = True
-                        if exists == False:
-                            self.tokensAnon.append(Token(newToken, newToken))
+                anonCount = words[1].count('"')/2
+                anonIndex = 0
+                expr = words[1]
+                while anonCount > 0:
+                    anonStart = expr.find('"')
+                    if anonStart != -1:
+                        anonEnd = expr[anonStart+1:].find('"')
+                        
+                        if anonEnd != -1:
+                            newToken = expr[anonStart+1:anonStart+1+anonEnd]
+                            exists = False
+                            for i in self.tokensAnon:
+                                if newToken == i.id:
+                                    exists = True
+                            if exists == False:
+                                self.tokensAnon.append(Token(newToken, newToken))
+                        anonIndex = anonStart + anonEnd+1
+                        expr = expr[anonIndex+1:]
+                        
+                        anonCount -= 1
                 if letters[-1] == '.':
                     value = words[1][:-1].replace('\t', '')
                 else:
