@@ -28,10 +28,6 @@ while success == False:
     characters = lector.getCharacters()
     productions = lector.getProductions()
     anons = lector.getTokensAnon()
-    for i in productions:
-        print(i.id)
-        print(i.params)
-        print(i.value)
     
     generador = Generador(tokens, keywords, characters, anons, productions)
     generador.analizeGrammar()
